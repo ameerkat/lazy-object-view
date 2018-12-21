@@ -22,3 +22,24 @@ if (targetElement !== null) {
 ```
 
 lazy-object-view is exported using webpack's umd (universal module definition).
+
+### Options
+When calling `render` you can pass an options object as an optional third parameter.
+
+#### useRootElement
+Setting this to true will collapse the entire object into a single `root` node.
+
+#### rootName
+If `useRootElement` is set to true, this will optionally set the name of the root node element. If nothing is specified then this will default to `root`.
+
+#### showLoadingIndicator
+When set, when expanding nodes this will attempt to show a loading indicator. Note that this will add an artificial 10ms delay to rendering.
+
+## Browser Compatability
+| Browser  | Result |
+| ------------- | ------------- |
+| Chrome 71 on Mac  | Working  |
+| Firefox 64 on Mac   | Working  |
+| Safari 12 on Mac | Working |
+
+Feel free to let me know of any compatability issues or issue pull requests to fix.
