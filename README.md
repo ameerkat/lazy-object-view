@@ -1,6 +1,8 @@
 # lazy-object-view
 lazy-object-view is a simple JS object tree visualizer/explorer that adheres to "what you see is what's in the DOM". lazy-object-view is written in Typescript.
 
+![screenshot](./assets/screenshot.png)
+
 ## Why
 lazy-object-view is intended to be a more performant alternative to existing JSON visualization packages such as [react-json-tree](https://www.npmjs.com/package/react-json-tree) when the size of the object to be rendered is very large. lazy-object-view attempts to minimize the number of DOM elements on the page by not rendering nodes until they are expanded, and culling nodes when they are closed.
 
@@ -24,7 +26,7 @@ if (targetElement !== null) {
 lazy-object-view is exported using webpack's umd (universal module definition).
 
 ### Options
-When calling `render` you can pass an options object as an optional third parameter.
+When calling `render` you can pass an options object as an optional third parameter with the following fields.
 
 #### useRootElement
 Setting this to true will collapse the entire object into a single `root` node.
