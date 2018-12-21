@@ -1,0 +1,52 @@
+@import 'spinner';
+
+$expandAndCollapseControlColor: #999999;
+$subtreeIndent: 15px;
+
+.collapsed::before {
+    content: "+";
+}
+
+.expanded::before {
+    content: "-";
+}
+
+.subtree, .spinner {
+    margin-left: $subtreeIndent;
+}
+
+.expanding::after {
+    margin-left: $subtreeIndent;
+    content: "spinner";
+    font-size: 0.8em;
+    color: $expandAndCollapseControlColor;
+    display: inline-block;
+}
+
+.key {
+    font-style: italic;
+    cursor: pointer;
+    display: inline-block;
+
+    &::before {
+        font-size: 0.8em;
+        margin-right: 5px;
+        color: $expandAndCollapseControlColor;
+        display: inline-block;
+        width: 10px;
+    }
+
+    &::after {
+        content: ":"
+    }
+}
+
+.value {
+    margin-left: 10px;
+    display: inline-block;
+}
+
+.key-value {
+    margin: 2px 0px;
+    font-family: monospace;
+}
