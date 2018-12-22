@@ -1,16 +1,12 @@
 var path = require('path');
 
 module.exports = {
-  mode: "development",
   entry: './src/index.ts',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
     library: "LazyObjectView",
     libraryTarget: 'umd',
-  },
-  optimization: {
-    minimize: false
   },
   devtool: 'inline-source-map',
   resolve: {
