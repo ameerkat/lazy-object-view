@@ -1,7 +1,7 @@
 {
   "name": "lazy-object-view",
   "version": "1.1.0",
-  "description": "Lazily render JS objects, what you see is what's in the DOM",
+  "description": "A simple JS object tree visualizer/explorer that adheres to 'what you see is what's in the DOM'",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
