@@ -24,16 +24,14 @@ if (targetElement !== null) {
 lazy-object-view is exported using webpack's umd (universal module definition).
 
 ### Options
-When calling `render` you can pass an options object as an optional third parameter with the following fields.
+When calling `render` you can pass an options object as an optional third parameter with the following fields. All suboptions of the options object are optional.
 
-#### useRootElement
-Setting this to true will collapse the entire object into a single `root` node.
-
-#### rootName
-If `useRootElement` is set to true, this will optionally set the name of the root node element. If nothing is specified then this will default to `root`.
-
-#### showLoadingIndicator
-When set, when expanding nodes this will attempt to show a loading indicator. Note that this will add an artificial 10ms delay to rendering.
+| Option  | Type | Description |
+| ------------- | ------------- | ------------- |
+| useRootElement | boolean | Setting this to true will collapse the entire object into a single `root` node. |
+| rootName | string | If `useRootElement` is set to true, this will optionally set the name of the root node element. If nothing is specified then this will default to `root`. |
+| showLoadingIndicator | boolean | When set, when expanding nodes this will attempt to show a loading indicator. Note that this will add an artificial 10ms delay to rendering. |
+| collapseStringsOver | number | Will collapse strings over this length and show an ellipses (...) with the amount of remaining text. These ellipses can be expanded by clicking. |
 
 ## Browser Compatability
 | Browser  | Result |

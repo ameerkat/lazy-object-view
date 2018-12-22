@@ -16,6 +16,12 @@ export interface RenderOptions {
      * Note that this introduces a small artificial delay of 10ms when expanding
      */
     showLoadingIndicator?: boolean;
+
+    /**
+     * If set will collapse values over that number and show an ellipses (...) at the 
+     * end with the remaining count to expand.
+     */
+    collapseStringsOver?: number;
 }
 
 export class LazyObjectView {
@@ -29,6 +35,106 @@ export class LazyObjectView {
 
     constructor(document?: Document) {
         this.document = document || window.document;
+    }
+
+    private constructTextElement(textValue: string, options?: RenderOptions): HTMLElement | Text {
+        if (options
+            && typeof options.collapseStringsOver !== "undefined"
+            && options.collapseStringsOver !== null
+            && options.collapseStringsOver >= 0
+            && textValue.length > options.collapseStringsOver) {
+            const parentElement = this.document.createElement("span");
+            const displayedPartString = textValue.substring(0, options.collapseStringsOver);
+            const textElement = this.document.createTextNode(displayedPartString);
+            parentElement.appendChild(textElement);
+
+            const ellipsesElement = this.document.createElement("span");
+            ellipsesElement.className = "ellipses";
+            const ellipsesText = this.document.createTextNode("... [+" + (textValue.length - options.collapseStringsOver) + "]");
+            ellipsesElement.appendChild(ellipsesText);
+            parentElement.appendChild(ellipsesElement);
+            ellipsesElement.onclick = (event: MouseEvent) => {
+                parentElement.innerHTML = "";
+                const fullTextElement = this.document.createTextNode(textValue);
+                parentElement.appendChild(fullTextElement);
+            };
+
+            return parentElement;
+        }
+
+        return this.document.createTextNode(textValue);
+    }
+
+    private constructRenderedKeyValue(
+        dataAttributeName: string, 
+        dataAttributeValue: any, 
+        options?: RenderOptions): HTMLElement {
+        const keyValueParent = this.document.createElement(this.elementTypeToUse);
+        keyValueParent.className = this.keyValueClassName;
+        const keyElement = this.document.createElement(this.elementTypeToUse);
+        keyElement.className = this.keyClassName;
+        const keyTextElement = this.document.createTextNode(dataAttributeName);
+        keyElement.appendChild(keyTextElement);
+        keyValueParent.appendChild(keyElement);
+       
+        const dataAttributeType = typeof dataAttributeValue;
+        let valueElement = this.document.createElement(this.elementTypeToUse);
+        valueElement.className = this.valueClassName + " " + dataAttributeType;
+        if (dataAttributeType === "undefined") {
+            const valueTextElement = this.constructTextElement("undefined", options);
+            valueElement.appendChild(valueTextElement);
+            keyValueParent.appendChild(valueElement);
+        } else if (dataAttributeValue === null) {
+            const valueTextElement = this.constructTextElement("null", options);
+            valueElement.appendChild(valueTextElement);
+            valueElement.className += " null";
+            keyValueParent.appendChild(valueElement);
+        } else if (Array.isArray(dataAttributeValue) && dataAttributeValue.length === 0) {
+            const valueTextElement = this.constructTextElement("[]", options);
+            valueElement.appendChild(valueTextElement);
+            valueElement.className += " empty";
+            keyValueParent.appendChild(valueElement);
+        } else if (dataAttributeType === "object") {
+            const subtreeElement = this.document.createElement(this.elementTypeToUse);
+            subtreeElement.className = this.subtreeClassName;
+            keyValueParent.appendChild(subtreeElement);
+
+            keyElement.className += " collapsed";
+            let thisToggleState = false;
+            keyElement.onclick = (event: MouseEvent) => {
+                if (thisToggleState === false) {
+                    if (options && options.showLoadingIndicator) {
+                        const loaderElement = this.document.createElement("div");
+                        loaderElement.className = "spinner";
+                        subtreeElement.appendChild(loaderElement);
+                        window.setTimeout(() => {
+                            this.render(subtreeElement, dataAttributeValue, options);
+                            thisToggleState = true;
+                            subtreeElement.removeChild(loaderElement);
+                            keyElement.className = keyElement.className.replace(/\bcollapsed\b/, "expanded");
+                        }, 10);
+                    } else {
+                        this.render(subtreeElement, dataAttributeValue, options);
+                        thisToggleState = true;
+                        keyElement.className = keyElement.className.replace(/\bcollapsed\b/, "expanded");
+                    }
+                } else {
+                    this.collapse(subtreeElement);
+                    thisToggleState = false;
+                    keyElement.className = keyElement.className.replace(/\bexpanded\b/, "collapsed");
+                }
+            };
+        } else if (dataAttributeType === "string") {
+            const valueTextElement = this.constructTextElement("\"" + dataAttributeValue + "\"", options);
+            valueElement.appendChild(valueTextElement);
+            keyValueParent.appendChild(valueElement);
+        } else {
+            const valueTextElement = this.constructTextElement(dataAttributeValue.toString(), options);
+            valueElement.appendChild(valueTextElement);
+            keyValueParent.appendChild(valueElement);
+        }
+
+        return keyValueParent;
     }
 
     /**
@@ -52,75 +158,20 @@ export class LazyObjectView {
             options.useRootElement = false;
         }
 
+        const accumulator = this.document.createDocumentFragment();
         for (const dataAttributeName in data) {
             if (!data.hasOwnProperty(dataAttributeName)) {
                 continue;
             }
 
-            const keyValueParent = this.document.createElement(this.elementTypeToUse);
-            keyValueParent.className = this.keyValueClassName;
-            const keyElement = this.document.createElement(this.elementTypeToUse);
-            keyElement.className = this.keyClassName;
-            const keyTextElement = this.document.createTextNode(dataAttributeName);
-            keyElement.appendChild(keyTextElement);
-            keyValueParent.appendChild(keyElement);
-           
-            const dataAttributeValue = data[dataAttributeName];
-            const dataAttributeType = typeof dataAttributeValue;
-            let valueElement = this.document.createElement(this.elementTypeToUse);
-            valueElement.className = this.valueClassName + " " + dataAttributeType;
-            if (dataAttributeType === "object") {
-                const subtreeElement = this.document.createElement(this.elementTypeToUse);
-                subtreeElement.className = this.subtreeClassName;
-                keyValueParent.appendChild(subtreeElement);
-
-                keyElement.className += " collapsed";
-                let thisToggleState = false;
-                keyElement.onclick = (event: MouseEvent) => {
-                    if (thisToggleState === false) {
-                        if (options && options.showLoadingIndicator) {
-                            const loaderElement = this.document.createElement("div");
-                            loaderElement.className = "spinner";
-                            target.appendChild(loaderElement);
-                            window.setTimeout(() => {
-                                this.render(subtreeElement, dataAttributeValue, options);
-                                thisToggleState = true;
-                                target.removeChild(loaderElement);
-                                keyElement.className = keyElement.className.replace(/\bcollapsed\b/, "expanded");
-                            }, 10);
-                        } else {
-                            this.render(subtreeElement, dataAttributeValue, options);
-                            thisToggleState = true;
-                            keyElement.className = keyElement.className.replace(/\bcollapsed\b/, "expanded");
-                        }
-                    } else {
-                        this.collapse(subtreeElement);
-                        thisToggleState = false;
-                        keyElement.className = keyElement.className.replace(/\bexpanded\b/, "collapsed");
-                    }
-                };
-            } else if (dataAttributeType === "undefined") {
-                const valueTextElement = this.document.createTextNode("undefined");
-                valueElement.appendChild(valueTextElement);
-                valueElement.className += " undefined";
-                keyValueParent.appendChild(valueElement);
-            } else if (dataAttributeValue === null) {
-                const valueTextElement = this.document.createTextNode("null");
-                valueElement.appendChild(valueTextElement);
-                valueElement.className += " null";
-                keyValueParent.appendChild(valueElement);
-            } else if (dataAttributeType === "string") {
-                const valueTextElement = this.document.createTextNode("\"" + dataAttributeValue + "\"");
-                valueElement.appendChild(valueTextElement);
-                keyValueParent.appendChild(valueElement);
-            } else {
-                const valueTextElement = this.document.createTextNode(dataAttributeValue.toString());
-                valueElement.appendChild(valueTextElement);
-                keyValueParent.appendChild(valueElement);
-            }
-
-            target.appendChild(keyValueParent);
+            const keyValueParent = this.constructRenderedKeyValue(
+                dataAttributeName, 
+                data[dataAttributeName],
+                options);
+            accumulator.appendChild(keyValueParent);
         }
+
+        target.appendChild(accumulator);
     }
 
     collapse(target: HTMLElement) {

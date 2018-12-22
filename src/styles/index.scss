@@ -1,6 +1,7 @@
 @import 'spinner';
 
 $expandAndCollapseControlColor: #999999;
+$disabledTextColor: #666666;
 $subtreeIndent: 15px;
 
 .collapsed::before {
@@ -11,16 +12,8 @@ $subtreeIndent: 15px;
     content: "-";
 }
 
-.subtree, .spinner {
+.subtree {
     margin-left: $subtreeIndent;
-}
-
-.expanding::after {
-    margin-left: $subtreeIndent;
-    content: "spinner";
-    font-size: 0.8em;
-    color: $expandAndCollapseControlColor;
-    display: inline-block;
 }
 
 .key {
@@ -30,7 +23,6 @@ $subtreeIndent: 15px;
 
     &::before {
         font-size: 0.8em;
-        margin-right: 5px;
         color: $expandAndCollapseControlColor;
         display: inline-block;
         width: 10px;
@@ -44,9 +36,21 @@ $subtreeIndent: 15px;
 .value {
     margin-left: 10px;
     display: inline-block;
+    white-space: pre-wrap;
+    
+    &.undefined, &.null, &.empty {
+        color: $disabledTextColor;
+    }
 }
 
 .key-value {
     margin: 2px 0px;
     font-family: monospace;
+}
+
+.ellipses {
+    margin-left: 4px;
+    font-size: 0.8em;
+    color: $expandAndCollapseControlColor;
+    cursor: pointer;
 }
