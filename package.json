@@ -1,11 +1,12 @@
 {
   "name": "lazy-object-view",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A simple JS object tree visualizer/explorer that adheres to 'what you see is what's in the DOM'",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "webpack -p",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "test": "nyc mocha -r ts-node/register --require ignore-styles --reporter spec ./tst/**/*.spec.ts && nyc report --reporter=text-lcov | coveralls"
   },
   "nyc": {
@@ -53,6 +54,7 @@
     "sass-loader": "^7.1.0",
     "source-map-support": "^0.5.9",
     "style-loader": "^0.23.1",
+    "ts-lint": "^4.5.1",
     "ts-node": "^7.0.1",
     "typescript": "^3.2.2",
     "webpack": "^4.28.0",

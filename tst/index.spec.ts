@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import { describe } from 'mocha'
 import { JSDOM } from 'jsdom'
-import LazyObjectView, { RenderOptions } from '../src/index'
+import LazyObjectView, { IRenderOptions } from '../src/index'
 
 const defaultDocument = `<!DOCTYPE html><html><head><title>Test Document</title><body><div class="root"></div></body></html>`;
 const createNewTestElement = (withDocument: Document) => {
@@ -31,7 +31,7 @@ const simpleTestType = (value: any, expectedValue: string, expectedType: string)
 
 const testRoot = (expectedRootName: string, rootName?: string, ) => {
     const window = new JSDOM(defaultDocument).window;
-    const options: RenderOptions = { "useRootElement": true, rootName: rootName }
+    const options: IRenderOptions = { "useRootElement": true, rootName: rootName }
     const lazyObjectView = new LazyObjectView(window);
     const testTarget = createNewTestElement(window.document);
 
@@ -167,7 +167,7 @@ describe('render', () => {
     it('should collapse strings over a certain length when using the collapse strings option', () => {
         const window = new JSDOM(defaultDocument).window;
         const stringCutoffThreshold = 12;
-        const options: RenderOptions = { "collapseStringsOver": stringCutoffThreshold }
+        const options: IRenderOptions = { "collapseStringsOver": stringCutoffThreshold }
         const lazyObjectView = new LazyObjectView(window);
         const testTarget = createNewTestElement(window.document);
 

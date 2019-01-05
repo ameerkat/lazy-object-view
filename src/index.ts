@@ -1,6 +1,6 @@
-import './styles/index.scss'
+import "./styles/index.scss";
 
-export interface RenderOptions {
+export interface IRenderOptions {
     /**
      * Whether or not to encapsulate the entire object inside a single root element.
      */
@@ -18,7 +18,7 @@ export interface RenderOptions {
     showLoadingIndicator?: boolean;
 
     /**
-     * If set will collapse values over that number and show an ellipses (...) at the 
+     * If set will collapse values over that number and show an ellipses (...) at the
      * end with the remaining count to expand.
      */
     collapseStringsOver?: number;
@@ -37,7 +37,48 @@ export class LazyObjectView {
         this.window = windowObject || window;
     }
 
-    private constructTextElement(textValue: string, options?: RenderOptions): HTMLElement | Text {
+    /**
+     * Renders a json viewer on the target element for the given data
+     * @param target The target element to render the JSON document under
+     * @param data The data to render as a tree view
+     * @param options Options for rendering the viewer
+     */
+    public render(target: HTMLElement, data: any, options?: IRenderOptions) {
+        if (target === null || typeof target === "undefined") {
+            throw new Error("target HTMLElement must not be null or undefined.");
+        } else if (data === null || typeof data === "undefined") {
+            return null;
+        }
+
+        if (options && options.useRootElement) {
+            const rootName = options.rootName || this.defaultRootNodeName;
+            const dataRef = data;
+            data = {};
+            data[rootName] = dataRef;
+            options.useRootElement = false;
+        }
+
+        const accumulator = this.window.document.createDocumentFragment();
+        for (const dataAttributeName in data) {
+            if (!data.hasOwnProperty(dataAttributeName)) {
+                continue;
+            }
+
+            const keyValueParent = this.constructRenderedKeyValue(
+                dataAttributeName,
+                data[dataAttributeName],
+                options);
+            accumulator.appendChild(keyValueParent);
+        }
+
+        target.appendChild(accumulator);
+    }
+
+    public collapse(target: HTMLElement) {
+        target.innerHTML = "";
+    }
+
+    private constructTextElement(textValue: string, options?: IRenderOptions): HTMLElement | Text {
         if (options
             && typeof options.collapseStringsOver !== "undefined"
             && options.collapseStringsOver !== null
@@ -50,7 +91,8 @@ export class LazyObjectView {
 
             const ellipsesElement = this.window.document.createElement("span");
             ellipsesElement.className = "ellipses";
-            const ellipsesText = this.window.document.createTextNode("... [+" + (textValue.length - options.collapseStringsOver) + "]");
+            const ellipsesText = this.window.document.createTextNode(
+                "... [+" + (textValue.length - options.collapseStringsOver) + "]");
             ellipsesElement.appendChild(ellipsesText);
             parentElement.appendChild(ellipsesElement);
             ellipsesElement.onclick = (event: MouseEvent) => {
@@ -66,9 +108,9 @@ export class LazyObjectView {
     }
 
     private constructRenderedKeyValue(
-        dataAttributeName: string, 
-        dataAttributeValue: any, 
-        options?: RenderOptions): HTMLElement {
+        dataAttributeName: string,
+        dataAttributeValue: any,
+        options?: IRenderOptions): HTMLElement {
         const keyValueParent = this.window.document.createElement(this.elementTypeToUse);
         keyValueParent.className = this.keyValueClassName;
         const keyElement = this.window.document.createElement(this.elementTypeToUse);
@@ -76,7 +118,7 @@ export class LazyObjectView {
         const keyTextElement = this.window.document.createTextNode(dataAttributeName);
         keyElement.appendChild(keyTextElement);
         keyValueParent.appendChild(keyElement);
-       
+
         const dataAttributeType = typeof dataAttributeValue;
         let valueElement = this.window.document.createElement(this.elementTypeToUse);
         valueElement.className = this.valueClassName + " " + dataAttributeType;
@@ -137,47 +179,6 @@ export class LazyObjectView {
         }
 
         return keyValueParent;
-    }
-
-    /**
-     * Renders a json viewer on the target element for the given data
-     * @param target The target element to render the JSON document under
-     * @param data The data to render as a tree view
-     * @param options Options for rendering the viewer
-     */
-    render(target: HTMLElement, data: any, options?: RenderOptions) {
-        if (target === null || typeof target === "undefined") {
-            throw new Error("target HTMLElement must not be null or undefined.");
-        } else if (data === null || typeof data === "undefined") {
-            return null;
-        }
-        
-        if (options && options.useRootElement) {
-            const rootName = options.rootName || this.defaultRootNodeName;
-            const dataRef = data;
-            data = {};
-            data[rootName] = dataRef;
-            options.useRootElement = false;
-        }
-
-        const accumulator = this.window.document.createDocumentFragment();
-        for (const dataAttributeName in data) {
-            if (!data.hasOwnProperty(dataAttributeName)) {
-                continue;
-            }
-
-            const keyValueParent = this.constructRenderedKeyValue(
-                dataAttributeName, 
-                data[dataAttributeName],
-                options);
-            accumulator.appendChild(keyValueParent);
-        }
-
-        target.appendChild(accumulator);
-    }
-
-    collapse(target: HTMLElement) {
-        target.innerHTML = "";
     }
 }
 
