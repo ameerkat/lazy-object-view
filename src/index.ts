@@ -31,10 +31,10 @@ export class LazyObjectView {
     private readonly valueClassName: string = "value";
     private readonly subtreeClassName: string = "subtree";
     private readonly defaultRootNodeName: string = "root";
-    private document: Document;
+    private window: Window;
 
-    constructor(document?: Document) {
-        this.document = document || window.document;
+    constructor(windowObject?: Window) {
+        this.window = windowObject || window;
     }
 
     private constructTextElement(textValue: string, options?: RenderOptions): HTMLElement | Text {
@@ -43,42 +43,42 @@ export class LazyObjectView {
             && options.collapseStringsOver !== null
             && options.collapseStringsOver >= 0
             && textValue.length > options.collapseStringsOver) {
-            const parentElement = this.document.createElement("span");
+            const parentElement = this.window.document.createElement("span");
             const displayedPartString = textValue.substring(0, options.collapseStringsOver);
-            const textElement = this.document.createTextNode(displayedPartString);
+            const textElement = this.window.document.createTextNode(displayedPartString);
             parentElement.appendChild(textElement);
 
-            const ellipsesElement = this.document.createElement("span");
+            const ellipsesElement = this.window.document.createElement("span");
             ellipsesElement.className = "ellipses";
-            const ellipsesText = this.document.createTextNode("... [+" + (textValue.length - options.collapseStringsOver) + "]");
+            const ellipsesText = this.window.document.createTextNode("... [+" + (textValue.length - options.collapseStringsOver) + "]");
             ellipsesElement.appendChild(ellipsesText);
             parentElement.appendChild(ellipsesElement);
             ellipsesElement.onclick = (event: MouseEvent) => {
                 parentElement.innerHTML = "";
-                const fullTextElement = this.document.createTextNode(textValue);
+                const fullTextElement = this.window.document.createTextNode(textValue);
                 parentElement.appendChild(fullTextElement);
             };
 
             return parentElement;
         }
 
-        return this.document.createTextNode(textValue);
+        return this.window.document.createTextNode(textValue);
     }
 
     private constructRenderedKeyValue(
         dataAttributeName: string, 
         dataAttributeValue: any, 
         options?: RenderOptions): HTMLElement {
-        const keyValueParent = this.document.createElement(this.elementTypeToUse);
+        const keyValueParent = this.window.document.createElement(this.elementTypeToUse);
         keyValueParent.className = this.keyValueClassName;
-        const keyElement = this.document.createElement(this.elementTypeToUse);
+        const keyElement = this.window.document.createElement(this.elementTypeToUse);
         keyElement.className = this.keyClassName;
-        const keyTextElement = this.document.createTextNode(dataAttributeName);
+        const keyTextElement = this.window.document.createTextNode(dataAttributeName);
         keyElement.appendChild(keyTextElement);
         keyValueParent.appendChild(keyElement);
        
         const dataAttributeType = typeof dataAttributeValue;
-        let valueElement = this.document.createElement(this.elementTypeToUse);
+        let valueElement = this.window.document.createElement(this.elementTypeToUse);
         valueElement.className = this.valueClassName + " " + dataAttributeType;
         if (dataAttributeType === "undefined") {
             const valueTextElement = this.constructTextElement("undefined", options);
@@ -95,7 +95,7 @@ export class LazyObjectView {
             valueElement.className += " empty";
             keyValueParent.appendChild(valueElement);
         } else if (dataAttributeType === "object") {
-            const subtreeElement = this.document.createElement(this.elementTypeToUse);
+            const subtreeElement = this.window.document.createElement(this.elementTypeToUse);
             subtreeElement.className = this.subtreeClassName;
             keyValueParent.appendChild(subtreeElement);
 
@@ -104,10 +104,10 @@ export class LazyObjectView {
             keyElement.onclick = (event: MouseEvent) => {
                 if (thisToggleState === false) {
                     if (options && options.showLoadingIndicator) {
-                        const loaderElement = this.document.createElement("div");
+                        const loaderElement = this.window.document.createElement("div");
                         loaderElement.className = "spinner";
                         subtreeElement.appendChild(loaderElement);
-                        window.setTimeout(() => {
+                        this.window.setTimeout(() => {
                             this.render(subtreeElement, dataAttributeValue, options);
                             thisToggleState = true;
                             subtreeElement.removeChild(loaderElement);
@@ -158,7 +158,7 @@ export class LazyObjectView {
             options.useRootElement = false;
         }
 
-        const accumulator = this.document.createDocumentFragment();
+        const accumulator = this.window.document.createDocumentFragment();
         for (const dataAttributeName in data) {
             if (!data.hasOwnProperty(dataAttributeName)) {
                 continue;
