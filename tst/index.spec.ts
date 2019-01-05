@@ -29,6 +29,33 @@ const simpleTestType = (value: any, expectedValue: string, expectedType: string)
     expect(resultTestValue).to.equal(expectedValue);
 }
 
+const testRoot = (expectedRootName: string, rootName?: string, ) => {
+    const window = new JSDOM(defaultDocument).window;
+    const options: RenderOptions = { "useRootElement": true, rootName: rootName }
+    const lazyObjectView = new LazyObjectView(window);
+    const testTarget = createNewTestElement(window.document);
+
+    lazyObjectView.render(
+        testTarget, 
+        { 
+            testkey: "shouldn't contain this."
+        }, 
+        options);
+    
+    // should be like a collapsed object
+    expect(testTarget.childElementCount).to.equal(1);
+    expect(testTarget.children[0].className).to.equal("key-value");
+    expect(testTarget.children[0].childElementCount).to.equal(2);
+    const resultTestKey = testTarget.children[0].children[0].textContent;
+    const resultTestValue = testTarget.children[0].children[1].textContent;
+    expect(testTarget.children[0].children[0].className).to.contain("collapsed");
+    // value element has no children
+    expect(testTarget.children[0].children[1].childElementCount).to.equal(0);
+    expect(resultTestKey).to.not.be.null;
+    expect(resultTestKey).to.equal(expectedRootName);
+    expect(resultTestValue).to.equal("");
+}
+
 describe('render', () => {
     it('should render no children for null data', () => {
         const window = new JSDOM(defaultDocument).window;
@@ -113,8 +140,16 @@ describe('render', () => {
         // testTarget > .key-value > the value element > the nested key value > the key or value
         const nestedTestKey = testTarget.children[0].children[1].children[0].children[0].textContent;
         const nestedTestValue = testTarget.children[0].children[1].children[0].children[1].textContent;
+        expect(testTarget.children[0].children[0].className).to.contain("expanded");
         expect(nestedTestKey).to.equal("nested");
         expect(nestedTestValue).to.equal("\"inner-value\"");
+
+        // and collapse again when clicked once more
+        var evt = window.document.createEvent("HTMLEvents");
+        evt.initEvent("click", false, true);
+        testTarget.children[0].children[0].dispatchEvent(evt);
+        expect(testTarget.children[0].children[0].className).to.contain("collapsed");
+        expect(testTarget.children[0].children[1].childElementCount).to.equal(0);
     });
 
     it('should collapse strings over a certain length when using the collapse strings option', () => {
@@ -141,5 +176,20 @@ describe('render', () => {
         const truncatedExpectedValue = expectedValue.substring(0, stringCutoffThreshold);
         const remainingLength = expectedValue.length - stringCutoffThreshold;
         expect(resultTestValue).to.equal(truncatedExpectedValue + "... [+" + remainingLength.toString() + "]");
+
+        // should expand the collapsed string value when clicked
+        var evt = window.document.createEvent("HTMLEvents");
+        evt.initEvent("click", false, true);
+        testTarget.children[0].children[1].children[0].children[0].dispatchEvent(evt);
+        const expandedTestValue = testTarget.children[0].children[1].textContent;
+        expect(expandedTestValue).to.equal(expectedValue);
+    });
+
+    it('should use a root element with name "root" when specifying to use root element, and providing no name', () => {
+        testRoot("root");
+    });
+
+    it('should use a root element with root name from options when specifying to use root element, and providing root name', () => {
+        testRoot("pineapple", "pineapple");
     });
 });
