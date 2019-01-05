@@ -6,17 +6,24 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "webpack -p",
-    "test": "nyc mocha -r ts-node/register --require ignore-styles --reporter spec ./tst/**/*.spec.ts"
+    "test": "nyc mocha -r ts-node/register --require ignore-styles --reporter spec ./tst/**/*.spec.ts && nyc report --reporter=text-lcov | coveralls"
   },
   "nyc": {
-    "extension": [".ts", ".tsx"],
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
     "exclude": [
-      "**/*.d.ts"
+      "webpack.config.js",
+      "**/*.d.ts",
+      "tst/",
+      "dist/",
+      "coverage/"
     ],
     "reporter": [
       "html"
     ],
-    "all": true  
+    "all": true
   },
   "keywords": [
     "json",
@@ -35,6 +42,7 @@
     "@types/mocha": "^5.2.5",
     "awesome-typescript-loader": "^5.2.1",
     "chai": "^4.2.0",
+    "coveralls": "^3.0.2",
     "css-loader": "^2.0.1",
     "dts-bundle": "^0.7.3",
     "ignore-styles": "^5.0.1",

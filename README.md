@@ -6,6 +6,7 @@ lazy-object-view is intended to be a more performant alternative to existing JSO
 
 ## Status
 [![Build Status](https://travis-ci.org/ameerkat/lazy-object-view.svg?branch=master)](https://travis-ci.org/ameerkat/lazy-object-view)
+[![Coverage Status](https://coveralls.io/repos/github/ameerkat/lazy-object-view/badge.svg?branch=master)](https://coveralls.io/github/ameerkat/lazy-object-view?branch=master)
 
 ### Browser Compatability
 | Browser  | Result |
