@@ -110,6 +110,18 @@ describe('render', () => {
         simpleTestType([], "[]", "empty");
     });
 
+    it('should render a simple key-value for single number value object', () => {
+        simpleTestType(3.2, "3.2", "number");
+    });
+
+    it('should render a simple key-value for single boolean value object', () => {
+        simpleTestType(true, "true", "boolean");
+    });
+
+    it('should render a simple key-value for single function value object', () => {
+        simpleTestType(() => { return "test"; }, "function () { return \"test\"; }", "function");
+    });
+
     it('should render a collapsed object tree for objects passed in, and expand on click', () => {
         const window = new JSDOM(defaultDocument).window;
         const render = new LazyObjectView(window);

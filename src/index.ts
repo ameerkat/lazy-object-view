@@ -108,6 +108,8 @@ export class LazyObjectView {
                         loaderElement.className = "spinner";
                         subtreeElement.appendChild(loaderElement);
                         this.window.setTimeout(() => {
+                            // We don't reuse the same action here as below since we want to remove the spinner
+                            // before actually setting the expanded class on the key element.
                             this.render(subtreeElement, dataAttributeValue, options);
                             thisToggleState = true;
                             subtreeElement.removeChild(loaderElement);
