@@ -31,6 +31,7 @@ export class LazyObjectView {
     private readonly valueClassName: string = "value";
     private readonly subtreeClassName: string = "subtree";
     private readonly defaultRootNodeName: string = "root";
+    private readonly spinnerRenderTimeoutMilliseconds: number = 10;
     private window: Window;
 
     constructor(windowObject?: Window) {
@@ -156,7 +157,7 @@ export class LazyObjectView {
                             thisToggleState = true;
                             subtreeElement.removeChild(loaderElement);
                             keyElement.className = keyElement.className.replace(/\bcollapsed\b/, "expanded");
-                        }, 10);
+                        }, this.spinnerRenderTimeoutMilliseconds);
                     } else {
                         this.render(subtreeElement, dataAttributeValue, options);
                         thisToggleState = true;

@@ -1,7 +1,7 @@
-import { expect } from 'chai'
-import { describe } from 'mocha'
-import { JSDOM } from 'jsdom'
-import LazyObjectView, { IRenderOptions } from '../src/index'
+import { expect } from "chai";
+import { describe } from "mocha";
+import { JSDOM } from "jsdom";
+import LazyObjectView, { IRenderOptions } from "../src/index";
 
 const defaultDocument = `<!DOCTYPE html><html><head><title>Test Document</title><body><div class="root"></div></body></html>`;
 const createNewTestElement = (withDocument: Document) => {
@@ -54,6 +54,10 @@ const testRoot = (expectedRootName: string, rootName?: string, ) => {
     expect(resultTestKey).to.not.be.null;
     expect(resultTestKey).to.equal(expectedRootName);
     expect(resultTestValue).to.equal("");
+}
+
+function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 describe('render', () => {
@@ -195,6 +199,61 @@ describe('render', () => {
         testTarget.children[0].children[1].children[0].children[0].dispatchEvent(evt);
         const expandedTestValue = testTarget.children[0].children[1].textContent;
         expect(expandedTestValue).to.equal(expectedValue);
+    });
+
+    /*
+     * Warning: if this fails it's most likely due to too much time passing between
+     * the click and the validation of the spinner. We should migrate this to use
+     * fake timers. 
+     */
+    it('should show a spinner when using the spinner option', async () => {
+        const window = new JSDOM(defaultDocument).window;
+        // We should fake the timers here
+        const options: IRenderOptions = { "showLoadingIndicator": true }
+        const lazyObjectView = new LazyObjectView(window);
+        const testTarget = createNewTestElement(window.document);
+
+        lazyObjectView.render(testTarget, { 
+            testkey: { 
+                nested: "inner-value"
+            } 
+        },
+        options);
+
+        expect(testTarget.childElementCount).to.equal(1);
+        expect(testTarget.children[0].className).to.equal("key-value");
+        expect(testTarget.children[0].childElementCount).to.equal(2);
+        const resultTestKey = testTarget.children[0].children[0].textContent;
+        const resultTestValue = testTarget.children[0].children[1].textContent;
+        expect(testTarget.children[0].children[0].className).to.contain("collapsed");
+        // value element has no children
+        expect(testTarget.children[0].children[1].childElementCount).to.equal(0);
+        expect(resultTestKey).to.not.be.null;
+        expect(resultTestKey).to.equal("testkey");
+        expect(resultTestValue).to.equal("");
+
+        // should show the loading indicator immediately when clicked
+        var evt = window.document.createEvent("HTMLEvents");
+        evt.initEvent("click", false, true);
+        testTarget.children[0].children[0].dispatchEvent(evt);
+        // testTarget > .key-value > the subtree element > the spinner
+        expect(testTarget.children[0].children[1].children[0].className).to.contain("spinner");
+
+        // Wait at least 10 ms
+        await sleep(20);
+        // testTarget > .key-value > the value element > the nested key value > the key or value
+        const nestedTestKey = testTarget.children[0].children[1].children[0].children[0].textContent;
+        const nestedTestValue = testTarget.children[0].children[1].children[0].children[1].textContent;
+        expect(testTarget.children[0].children[0].className).to.contain("expanded");
+        expect(nestedTestKey).to.equal("nested");
+        expect(nestedTestValue).to.equal("\"inner-value\"");
+
+        // and collapse again when clicked once more
+        var evt = window.document.createEvent("HTMLEvents");
+        evt.initEvent("click", false, true);
+        testTarget.children[0].children[0].dispatchEvent(evt);
+        expect(testTarget.children[0].children[0].className).to.contain("collapsed");
+        expect(testTarget.children[0].children[1].childElementCount).to.equal(0);
     });
 
     it('should use a root element with name "root" when specifying to use root element, and providing no name', () => {
