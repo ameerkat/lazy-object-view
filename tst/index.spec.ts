@@ -132,11 +132,13 @@ describe("render", () => {
         const render = new LazyObjectView(window);
         const testTarget = createNewTestElement(window.document);
 
-        render.render(testTarget, {
-            testkey: {
-                nested: "inner-value",
-            },
-        });
+        const rootObject = { notMyOwnProperty: "test" };
+        const objectToUse = Object.create(rootObject);
+        objectToUse["testkey"] = {
+            nested: "inner-value",
+        };
+
+        render.render(testTarget, objectToUse);
 
         expect(testTarget.childElementCount).to.equal(1);
         expect(testTarget.children[0].className).to.equal("key-value");
